@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Carteira · Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Karla:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0f0f13;
+  --ink: #f0f0f0;
+  --muted: #a0a0b0;
+  --border: #2a2a35;
+  --green: #4ade80;
+  --green-light: #0d2a1a;
+  --red: #f87171;
+  --red-light: #2a0d0d;
+  --amber: #fbbf24;
+  --amber-light: #2a1e05;
+  --card: #16161f;
+  --accent: #f0f0f0;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Karla', sans-serif;
+  font-weight: 400;
+  min-height: 100vh;
+}
+
+/* Grain texture */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* HEADER */
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: 2.5rem 3rem 1.5rem;
+  border-bottom: 2px solid var(--ink);
+}
+
+.logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 3rem;
+  letter-spacing: 0.04em;
+  line-height: 1;
+}
+
+.logo span { color: var(--muted); font-size: 1rem; font-family: 'Karla', sans-serif; font-weight: 400; display: block; letter-spacing: 0.1em; text-transform: uppercase; }
+
+.header-right {
+  text-align: right;
+}
+
+.portfolio-total {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2.2rem;
+  line-height: 1;
+}
+
+.portfolio-label {
+  font-size: 0.7rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 600;
+}
+
+/* SCENARIO TABS */
+.scenarios {
+  display: flex;
+  gap: 0;
+  padding: 0 3rem;
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+}
+
+.scenario-tab {
+  padding: 0.9rem 1.5rem;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 600;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  white-space: nowrap;
+  color: var(--muted);
+  transition: all 0.15s;
+  background: none;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  font-family: 'Karla', sans-serif;
+}
+
+.scenario-tab:hover { color: var(--ink); }
+.scenario-tab.active { color: var(--ink); border-bottom-color: var(--ink); }
+
+/* MAIN LAYOUT */
+.main {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 0;
+  min-height: calc(100vh - 160px);
+}
+
+/* TABLE AREA */
+.table-area {
+  padding: 2rem 3rem;
+  border-right: 1px solid var(--border);
+}
+
+.section-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.1rem;
+  letter-spacing: 0.06em;
+  margin-bottom: 1.2rem;
+  color: var(--muted);
+}
+
+/* Stock Table */
+.stock-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.stock-table thead th {
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  font-weight: 700;
+  padding: 0.5rem 0.8rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.stock-table thead th:last-child,
+.stock-table thead th:nth-child(4),
+.stock-table thead th:nth-child(5) { text-align: right; }
+
+.stock-table tbody tr {
+  border-bottom: 1px solid var(--border);
+  transition: background 0.1s;
+  cursor: pointer;
+}
+
+.stock-table tbody tr:hover { background: rgba(255,255,255,0.04); }
+.stock-table tbody tr.selected { background: rgba(255,255,255,0.07); }
+
+.stock-table td {
+  padding: 0.85rem 0.8rem;
+  font-size: 0.82rem;
+  vertical-align: middle;
+}
+
+.ticker {
+  font-weight: 600;
+  font-size: 0.82rem;
+  letter-spacing: 0.02em;
+}
+
+.company-name {
+  font-size: 0.68rem;
+  color: var(--muted);
+  margin-top: 1px;
+}
+
+.price { font-weight: 500; text-align: right; }
+
+.change-badge {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  border-radius: 2px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  float: right;
+}
+
+.change-badge.pos { background: var(--green-light); color: var(--green); }
+.change-badge.neg { background: var(--red-light); color: var(--red); }
+
+.sector-tag {
+  font-size: 0.62rem;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 0.15rem 0.4rem;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+/* Allocation bar */
+.alloc-cell { min-width: 140px; }
+
+.alloc-bar-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.alloc-bar-bg {
+  flex: 1;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.alloc-bar-fill {
+  height: 100%;
+  background: var(--ink);
+  border-radius: 2px;
+  transition: width 0.4s cubic-bezier(0.4,0,0.2,1);
+}
+
+.alloc-pct {
+  font-size: 0.72rem;
+  font-weight: 600;
+  min-width: 36px;
+  text-align: right;
+}
+
+/* SIDEBAR */
+.sidebar {
+  padding: 2rem 1.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* Donut chart */
+.donut-section { }
+
+.donut-wrap {
+  position: relative;
+  width: 180px;
+  height: 180px;
+  margin: 1rem auto;
+}
+
+#donutCanvas { display: block; }
+
+.donut-center {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.donut-center-val {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.6rem;
+  line-height: 1;
+  color: #f0f0f0;
+}
+
+.donut-center-label {
+  font-size: 0.6rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* Sector breakdown */
+.sector-list { display: flex; flex-direction: column; gap: 0.5rem; }
+
+.sector-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.sector-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.sector-name { font-size: 0.72rem; flex: 1; color: var(--ink); font-weight: 500; }
+.sector-pct { font-size: 0.72rem; font-weight: 700; color: var(--ink); }
+
+/* Scenario summary */
+.scenario-box {
+  background: #1e1e2a;
+  color: #f0f0f0;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1.2rem;
+}
+
+.scenario-box-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1rem;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.8rem;
+  opacity: 0.85;
+}
+
+.scenario-kpi {
+  margin-bottom: 0.8rem;
+}
+
+.scenario-kpi-label {
+  font-size: 0.62rem;
+  opacity: 0.75;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.2rem;
+}
+
+.scenario-kpi-val {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+.scenario-kpi-val.pos { color: #6ee49a; }
+.scenario-kpi-val.neg { color: #f87171; }
+
+.divider { border: none; border-top: 1px solid rgba(255,255,255,0.1); margin: 0.8rem 0; }
+
+/* Alerts */
+.alert-list { display: flex; flex-direction: column; gap: 0.5rem; }
+
+.alert-item {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+  padding: 0.6rem 0.7rem;
+  border-radius: 3px;
+  font-size: 0.7rem;
+  line-height: 1.4;
+}
+
+.alert-item.warn { background: var(--amber-light); color: var(--amber); }
+.alert-item.info { background: var(--green-light); color: var(--green); }
+.alert-item.danger { background: var(--red-light); color: var(--red); }
+
+.alert-icon { font-size: 0.8rem; flex-shrink: 0; margin-top: 1px; }
+
+@media (max-width: 900px) {
+  .main { grid-template-columns: 1fr; }
+  header { padding: 1.5rem; flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+  .table-area { padding: 1.5rem; border-right: none; }
+  .sidebar { padding: 1.5rem; }
+  .scenarios { padding: 0 1.5rem; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    CARTEIRA
+    <span>Erick · Santos, SP · 28 Abr 2026</span>
+  </div>
+  <div class="header-right">
+    <div class="portfolio-label">Patrimônio simulado</div>
+    <div class="portfolio-total" id="totalVal">R$ 100.000</div>
+  </div>
+</header>
+
+<div class="scenarios">
+  <button class="scenario-tab active" onclick="setScenario('conservador')">Conservador</button>
+  <button class="scenario-tab" onclick="setScenario('moderado')">Moderado</button>
+  <button class="scenario-tab" onclick="setScenario('arrojado')">Arrojado</button>
+  <button class="scenario-tab" onclick="setScenario('commodities')">Foco Commodities</button>
+  <button class="scenario-tab" onclick="setScenario('tech')">Foco Tech/Global</button>
+  <button class="scenario-tab" onclick="setScenario('custom')">Personalizado ✎</button>
+</div>
+
+<div class="main">
+  <div class="table-area">
+    <div class="section-title">POSIÇÕES · <span id="scenarioLabel">CENÁRIO CONSERVADOR</span></div>
+    <table class="stock-table">
+      <thead>
+        <tr>
+          <th>Ativo</th>
+          <th>Setor</th>
+          <th style="text-align:right">Cotação hoje</th>
+          <th style="text-align:right">Variação</th>
+          <th>Alocação</th>
+        </tr>
+      </thead>
+      <tbody id="stockBody"></tbody>
+    </table>
+    <div style="margin-top:1rem; font-size:0.65rem; color:var(--muted);">
+      * Cotações de 28/04/2026. Clique em uma linha para ver detalhes no painel lateral.
+    </div>
+  </div>
+
+  <div class="sidebar">
+    <div class="donut-section">
+      <div class="section-title">DISTRIBUIÇÃO POR SETOR</div>
+      <div class="donut-wrap">
+        <canvas id="donutCanvas" width="180" height="180"></canvas>
+        <div class="donut-center">
+          <div class="donut-center-val" id="donutCenter">—</div>
+          <div class="donut-center-label">ativos</div>
+        </div>
+      </div>
+      <div class="sector-list" id="sectorList"></div>
+    </div>
+
+    <div>
+      <div class="section-title">PROJEÇÃO DO CENÁRIO</div>
+      <div class="scenario-box" id="scenarioBox">
+        <div class="scenario-box-title" id="boxTitle">CONSERVADOR</div>
+        <div class="scenario-kpi">
+          <div class="scenario-kpi-label">Retorno esperado 12m</div>
+          <div class="scenario-kpi-val pos" id="box12m">—</div>
+        </div>
+        <div class="scenario-kpi">
+          <div class="scenario-kpi-label">Retorno esperado 5 anos</div>
+          <div class="scenario-kpi-val pos" id="box5y">—</div>
+        </div>
+        <hr class="divider">
+        <div class="scenario-kpi">
+          <div class="scenario-kpi-label">Volatilidade estimada</div>
+          <div class="scenario-kpi-val" id="boxVol">—</div>
+        </div>
+        <div class="scenario-kpi">
+          <div class="scenario-kpi-label">Concentração máxima</div>
+          <div class="scenario-kpi-val" id="boxConc">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-title">ALERTAS</div>
+      <div class="alert-list" id="alertList"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const STOCKS = [
+  { ticker: 'ALPA4',  name: 'Alpargatas S.A.',        sector: 'Consumo',    price: 'R$ 12,22', change: +0.08,  color: '#a78bfa' },
+  { ticker: 'AMER3',  name: 'Americanas S.A.',         sector: 'Varejo',     price: 'R$ 6,09',  change: +1.84,  color: '#f472b6' },
+  { ticker: 'AURE3',  name: 'Auren Energia S.A.',      sector: 'Energia',    price: 'R$ 13,82', change: -1.78,  color: '#34d399' },
+  { ticker: 'BABA34', name: 'Alibaba Group (BDR)',      sector: 'Tech Global',price: 'R$ 23,47', change: -3.50,  color: '#60a5fa' },
+  { ticker: 'BBDC4',  name: 'Banco Bradesco S.A.',     sector: 'Financeiro', price: 'R$ 19,73', change: -0.95,  color: '#fbbf24' },
+  { ticker: 'BBAS3',  name: 'Banco do Brasil S.A.',    sector: 'Financeiro', price: 'R$ 22,51', change: -0.84,  color: '#fbbf24' },
+  { ticker: 'BRAP4',  name: 'Bradespar S.A.',          sector: 'Mineração',  price: 'R$ 23,85', change: -0.42,  color: '#f97316' },
+  { ticker: 'CAML3',  name: 'Camil Alimentos S.A.',    sector: 'Consumo',    price: 'R$ 6,34',  change: -1.86,  color: '#a78bfa' },
+  { ticker: 'CSNA3',  name: 'CSN',                     sector: 'Siderurgia', price: 'R$ 6,40',  change: -0.47,  color: '#94a3b8' },
+  { ticker: 'CSAN3',  name: 'Cosan S.A.',              sector: 'Energia',    price: 'R$ 5,00',  change: -2.15,  color: '#34d399' },
+  { ticker: 'CVCB3',  name: 'CVC Brasil',              sector: 'Turismo',    price: 'R$ 1,980', change: -1.00,  color: '#e879f9' },
+  { ticker: 'ENJU3',  name: 'Enjoei S.A.',             sector: 'Varejo',     price: 'R$ 1,230', change: -2.38,  color: '#f472b6' },
+  { ticker: 'MLAS3',  name: 'Grupo Multi S.A.',        sector: 'Serviços',   price: 'R$ 1,540', change: -3.75,  color: '#e2e8f0' },
+  { ticker: 'ITSA4',  name: 'Itaúsa S.A.',             sector: 'Financeiro', price: 'R$ 14,10', change: -0.84,  color: '#fbbf24' },
+  { ticker: 'KLBN11', name: 'Klabin S.A.',             sector: 'Papel/Celulose', price: 'R$ 17,87', change: -0.39, color: '#86efac' },
+  { ticker: 'MGLU3',  name: 'Magazine Luiza S.A.',     sector: 'Varejo',     price: 'R$ 8,53',  change: -1.37,  color: '#f472b6' },
+  { ticker: 'NVDC34', name: 'NVIDIA Corporation (BDR)',sector: 'Tech Global', price: 'R$ 22,45', change: +3.46,  color: '#60a5fa' },
+  { ticker: 'PETR4',  name: 'Petrobras S.A.',          sector: 'Energia',    price: 'R$ 47,37', change: +0.45,  color: '#34d399' },
+  { ticker: 'RAIZ4',  name: 'Raízen S.A.',             sector: 'Energia',    price: 'R$ 0,490', change: -5.77,  color: '#34d399' },
+  { ticker: 'ASAI3',  name: 'Sendas Distribuidora',    sector: 'Varejo',     price: 'R$ 9,58',  change: +1.70,  color: '#f472b6' },
+  { ticker: 'VALE3',  name: 'Vale S.A.',               sector: 'Mineração',  price: 'R$ 85,50', change: -0.43,  color: '#f97316' },
+  { ticker: 'WEGE3',  name: 'WEG S.A.',                sector: 'Indústria',  price: 'R$ 48,19', change: +0.82,  color: '#38bdf8' },
+];
+
+// Scenarios: allocation % per ticker (must sum to 100)
+const SCENARIOS = {
+  conservador: {
+    label: 'CONSERVADOR',
+    desc: 'Baixa volatilidade, foco em empresas sólidas e dividendos',
+    ret12m: '+8% ~ +12%', ret5y: '+55% ~ +80%', vol: 'Baixa', conc: '15%',
+    allocs: {
+      BBDC4:8, BBAS3:10, ITSA4:10, PETR4:12, VALE3:10, BRAP4:5,
+      WEGE3:8, KLBN11:7, AURE3:6, CAML3:4, CSNA3:4, CSAN3:4,
+      RAIZ4:3, ALPA4:3, ASAI3:3, AMER3:1, BABA34:1, NVDC34:1,
+      MGLU3:0, ENJU3:0, CVCB3:0, MLAS3:0,
+    }
+  },
+  moderado: {
+    label: 'MODERADO',
+    desc: 'Equilíbrio entre crescimento e estabilidade',
+    ret12m: '+12% ~ +18%', ret5y: '+80% ~ +130%', vol: 'Média', conc: '12%',
+    allocs: {
+      PETR4:10, VALE3:8, BBAS3:7, ITSA4:7, WEGE3:8, NVDC34:6,
+      CSAN3:6, RAIZ4:5, BBDC4:5, BRAP4:5, KLBN11:5, AURE3:5,
+      ASAI3:4, ALPA4:4, CAML3:3, CSNA3:3, BABA34:3, MGLU3:2,
+      AMER3:1, ENJU3:1, CVCB3:1, MLAS3:1,
+    }
+  },
+  arrojado: {
+    label: 'ARROJADO',
+    desc: 'Alta exposição a crescimento e volatilidade elevada',
+    ret12m: '+18% ~ +35%', ret5y: '+130% ~ +250%', vol: 'Alta', conc: '15%',
+    allocs: {
+      NVDC34:10, BABA34:8, WEGE3:8, PETR4:8, VALE3:7, MGLU3:6,
+      ASAI3:6, AMER3:5, RAIZ4:5, CSAN3:5, ENJU3:4, MLAS3:4,
+      BBAS3:5, ITSA4:5, AURE3:4, BRAP4:3, BBDC4:3, CAML3:2,
+      ALPA4:1, KLBN11:1, CSNA3:0, CVCB3:0,
+    }
+  },
+  commodities: {
+    label: 'FOCO COMMODITIES',
+    desc: 'Concentrado em energia, mineração e insumos',
+    ret12m: '+10% ~ +22%', ret5y: '+70% ~ +160%', vol: 'Média-Alta', conc: '20%',
+    allocs: {
+      VALE3:15, PETR4:15, BRAP4:12, CSAN3:10, RAIZ4:10, AURE3:8,
+      KLBN11:7, CSNA3:6, CAML3:5, BBAS3:4, ITSA4:4, BBDC4:2,
+      WEGE3:2, NVDC34:0, BABA34:0, MGLU3:0, ASAI3:0, AMER3:0,
+      ALPA4:0, ENJU3:0, CVCB3:0, MLAS3:0,
+    }
+  },
+  tech: {
+    label: 'FOCO TECH / GLOBAL',
+    desc: 'Exposição internacional via BDRs e empresas tech locais',
+    ret12m: '+15% ~ +30%', ret5y: '+100% ~ +200%', vol: 'Alta', conc: '18%',
+    allocs: {
+      NVDC34:18, BABA34:14, WEGE3:12, MGLU3:8, ENJU3:7, MLAS3:6,
+      ASAI3:6, PETR4:6, BBAS3:5, ITSA4:5, VALE3:4, RAIZ4:3,
+      CSAN3:3, BBDC4:2, AURE3:1, ALPA4:0, BRAP4:0, KLBN11:0,
+      CAML3:0, CSNA3:0, CVCB3:0, AMER3:0,
+    }
+  },
+  custom: {
+    label: 'PERSONALIZADO',
+    desc: 'Ajuste manual das alocações',
+    ret12m: '—', ret5y: '—', vol: '—', conc: '—',
+    allocs: null, // will be generated from equal split
+  }
+};
+
+// Build equal split for custom
+const eqPct = Math.floor(100 / STOCKS.length);
+const rem = 100 - eqPct * STOCKS.length;
+SCENARIOS.custom.allocs = {};
+STOCKS.forEach((s, i) => { SCENARIOS.custom.allocs[s.ticker] = eqPct + (i < rem ? 1 : 0); });
+
+// Sector colors (unique per sector)
+const SECTOR_COLORS = {
+  'Financeiro': '#fbbf24',
+  'Energia': '#34d399',
+  'Mineração': '#f97316',
+  'Varejo': '#f472b6',
+  'Tech Global': '#60a5fa',
+  'Consumo': '#a78bfa',
+  'Indústria': '#38bdf8',
+  'Papel/Celulose': '#86efac',
+  'Siderurgia': '#94a3b8',
+  'Turismo': '#e879f9',
+  'Serviços': '#cbd5e1',
+};
+
+let currentScenario = 'conservador';
+let customAllocs = { ...SCENARIOS.custom.allocs };
+
+function setScenario(name) {
+  currentScenario = name;
+  document.querySelectorAll('.scenario-tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  render();
+}
+
+function render() {
+  const sc = SCENARIOS[currentScenario];
+  const allocs = currentScenario === 'custom' ? customAllocs : sc.allocs;
+
+  // Scenario label
+  document.getElementById('scenarioLabel').textContent = sc.label;
+
+  // Build table
+  const tbody = document.getElementById('stockBody');
+  tbody.innerHTML = '';
+
+  // Sort by allocation desc
+  const sorted = [...STOCKS].sort((a, b) => (allocs[b.ticker] || 0) - (allocs[a.ticker] || 0));
+
+  sorted.forEach(s => {
+    const pct = allocs[s.ticker] || 0;
+    if (currentScenario !== 'custom' && pct === 0) return; // hide zero allocs in preset scenarios
+
+    const tr = document.createElement('tr');
+    const changeClass = s.change >= 0 ? 'pos' : 'neg';
+    const changeStr = (s.change >= 0 ? '+' : '') + s.change.toFixed(2) + '%';
+
+    tr.innerHTML = `
+      <td>
+        <div class="ticker">${s.ticker}</div>
+        <div class="company-name">${s.name}</div>
+      </td>
+      <td><span class="sector-tag">${s.sector}</span></td>
+      <td class="price">${s.price}</td>
+      <td><span class="change-badge ${changeClass}">${changeStr}</span></td>
+      <td class="alloc-cell">
+        <div class="alloc-bar-wrap">
+          <div class="alloc-bar-bg"><div class="alloc-bar-fill" style="width:${pct}%"></div></div>
+          ${currentScenario === 'custom'
+            ? `<input type="number" min="0" max="100" value="${pct}" style="width:48px;font-size:0.72rem;font-family:'Karla',sans-serif;border:1px solid var(--border);padding:0.2rem 0.3rem;border-radius:2px;background:var(--bg);" onchange="updateCustom('${s.ticker}', this.value)">`
+            : `<span class="alloc-pct">${pct}%</span>`}
+        </div>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  // Scenario box
+  document.getElementById('boxTitle').textContent = sc.label;
+  document.getElementById('box12m').textContent = sc.ret12m;
+  document.getElementById('box5y').textContent = sc.ret5y;
+  document.getElementById('boxVol').textContent = sc.vol;
+  document.getElementById('boxConc').textContent = sc.conc;
+
+  // Total
+  document.getElementById('totalVal').textContent = 'R$ 100.000';
+
+  // Sector donut
+  const sectorTotals = {};
+  STOCKS.forEach(s => {
+    const pct = allocs[s.ticker] || 0;
+    if (!sectorTotals[s.sector]) sectorTotals[s.sector] = 0;
+    sectorTotals[s.sector] += pct;
+  });
+
+  drawDonut(sectorTotals);
+  drawSectorList(sectorTotals);
+  drawAlerts(allocs);
+}
+
+function updateCustom(ticker, val) {
+  customAllocs[ticker] = parseInt(val) || 0;
+  render();
+}
+
+function drawDonut(sectorTotals) {
+  const canvas = document.getElementById('donutCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = 180, H = 180;
+  canvas.width = W; canvas.height = H;
+
+  const total = Object.values(sectorTotals).reduce((a, b) => a + b, 0);
+  const sectors = Object.entries(sectorTotals).filter(([,v]) => v > 0).sort((a,b) => b[1]-a[1]);
+
+  const cx = W/2, cy = H/2, r = 70, inner = 46;
+  let angle = -Math.PI / 2;
+
+  sectors.forEach(([name, val]) => {
+    const slice = (val / (total || 1)) * Math.PI * 2;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, r, angle, angle + slice);
+    ctx.closePath();
+    ctx.fillStyle = SECTOR_COLORS[name] || '#999';
+    ctx.fill();
+    angle += slice;
+  });
+
+  // Inner hole
+  ctx.beginPath();
+  ctx.arc(cx, cy, inner, 0, Math.PI * 2);
+  ctx.fillStyle = '#0f0f13';
+  ctx.fill();
+
+  document.getElementById('donutCenter').textContent = sectors.length;
+}
+
+function drawSectorList(sectorTotals) {
+  const total = Object.values(sectorTotals).reduce((a, b) => a + b, 0);
+  const sectors = Object.entries(sectorTotals).filter(([,v]) => v > 0).sort((a,b) => b[1]-a[1]);
+  const el = document.getElementById('sectorList');
+  el.innerHTML = sectors.map(([name, val]) => `
+    <div class="sector-row">
+      <div class="sector-dot" style="background:${SECTOR_COLORS[name] || '#999'}"></div>
+      <div class="sector-name">${name}</div>
+      <div class="sector-pct">${val}%</div>
+    </div>
+  `).join('');
+}
+
+function drawAlerts(allocs) {
+  const alerts = [];
+
+  // Check Cosan + Raízen concentration
+  const cosanRaizen = (allocs['CSAN3'] || 0) + (allocs['RAIZ4'] || 0);
+  if (cosanRaizen >= 10) {
+    alerts.push({ type: 'warn', icon: '⚠', text: `CSAN3 + RAIZ4 somam ${cosanRaizen}% — mesmo grupo controlador. Risco concentrado.` });
+  }
+
+  // Vale + Bradespar
+  const valeBrap = (allocs['VALE3'] || 0) + (allocs['BRAP4'] || 0);
+  if (valeBrap >= 10) {
+    alerts.push({ type: 'warn', icon: '⚠', text: `VALE3 + BRAP4 somam ${valeBrap}% — Bradespar é holding da Vale. Dupla exposição.` });
+  }
+
+  // Sector financeiro
+  const fin = ['BBDC4','BBAS3','ITSA4'].reduce((s, t) => s + (allocs[t] || 0), 0);
+  if (fin >= 20) {
+    alerts.push({ type: 'info', icon: '💡', text: `Financeiro com ${fin}% da carteira — bom para dividendos, mas sensível à taxa Selic.` });
+  }
+
+  // High volatility stocks
+  const highVol = ['AMER3','CVCB3','ENJU3','RAIZ4','MGLU3'].filter(t => (allocs[t]||0) >= 5);
+  if (highVol.length >= 2) {
+    alerts.push({ type: 'danger', icon: '🔴', text: `${highVol.join(', ')} são ações de alta volatilidade com participação relevante.` });
+  }
+
+  // Good: international diversification
+  const intl = (allocs['NVDC34'] || 0) + (allocs['BABA34'] || 0);
+  if (intl >= 8) {
+    alerts.push({ type: 'info', icon: '✓', text: `BDRs internacionais em ${intl}% — boa proteção cambial na carteira.` });
+  }
+
+  if (alerts.length === 0) {
+    alerts.push({ type: 'info', icon: '✓', text: 'Carteira equilibrada sem concentrações críticas identificadas.' });
+  }
+
+  const el = document.getElementById('alertList');
+  el.innerHTML = alerts.map(a => `
+    <div class="alert-item ${a.type}">
+      <span class="alert-icon">${a.icon}</span>
+      <span>${a.text}</span>
+    </div>
+  `).join('');
+}
+
+// Init
+render();
+</script>
+</body>
+</html>
